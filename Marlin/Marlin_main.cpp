@@ -228,6 +228,8 @@
  * T0-T3 - Select a tool by index (usually an extruder) [ F<mm/min> ]
  *
  */
+int feedmultiply=100; //100->1 200->2
+int saved_feedmultiply;
 
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   void gcode_M100();
@@ -6182,6 +6184,56 @@ void process_next_command() {
           gcode_M605();
           break;
       #endif // DUAL_X_CARRIAGE
+
+#ifdef WITBOX 
+
+/*
+    WITBOX new GCODES:
+
+    *M701: load filament script
+    *M702: unload filament script
+
+*/
+   
+        
+    case 701:
+      SERIAL_ECHOLN(" --LOAD-- ");
+      
+       st_synchronize();
+       plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); 
+    
+      //-- Extruir!
+      current_position[E_AXIS] += 100.0;
+      plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS],current_position[E_AXIS], 300/60, active_extruder);
+      st_synchronize(); 
+
+  //  do_blocking_extrude_to(100);
+    
+      break;
+      
+    case 702:
+      SERIAL_ECHOLN(" --UNLOAD-- ");
+      
+       st_synchronize();
+       plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); 
+    
+      //-- Extruir!
+      current_position[E_AXIS] += 10.0;
+      plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS],current_position[E_AXIS], 300/60, active_extruder);
+      st_synchronize(); 
+      
+      //-- Sacar!
+      current_position[E_AXIS] -= 60.0;
+      plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS],current_position[E_AXIS], 300/60, active_extruder);
+      st_synchronize();
+
+
+  //  do_blocking_extrude_to(30);
+  //  do_blocking_extrude_to(-100);
+
+      break;  
+    
+#endif //WITBOX
 
       case 907: // M907 Set digital trimpot motor current using axis codes.
         gcode_M907();

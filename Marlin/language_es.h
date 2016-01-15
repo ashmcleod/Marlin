@@ -80,7 +80,7 @@
 #define MSG_ESTEPS                          "E pasos/mm"
 #define MSG_TEMPERATURE                     "Temperatura"
 #define MSG_MOTION                          "Movimiento"
-#define MSG_VOLUMETRIC                      "Filamento"
+#define MSG_VOLUMETRIC                      "Volumetrica"
 #define MSG_VOLUMETRIC_ENABLED              "E in mm3"
 #define MSG_FILAMENT_DIAM                   "Fil. Dia."
 #define MSG_CONTRAST                        "Contraste"
@@ -123,6 +123,34 @@
 #define MSG_ENDSTOP_ABORT                   "Endstop abort"
 #define MSG_END_HOUR                        "horas"
 #define MSG_END_MINUTE                      "minutos"
+
+  #ifdef WITBOX
+
+  #define MSG_FILAMENT "Filamento"
+  #define MSG_LEVEL_PLATE "Nivelar base"
+  #define MSG_START_SCRIPT "Start script"
+  #define MSG_PREHEAT "Calentar"
+  #define MSG_JOG "Mover"
+  #define MSG_LOAD "Cargar"
+  #define MSG_UNLOAD "Descargar"
+  #define MSG_ABORT "Atras"
+  #define MSG_PRE_EXTRUD "Inserta/presiona"
+  #define MSG_EXTRUDING "Extruyendo..."
+  #define MSG_LENGTH "Logitud:"
+  #define MSG_RETRACTING "Retrayendo"
+  #define MSG_WELLCOME "Hephestos"
+  #define MSG_LP_INTRO "Nivelando la base... Pulsa para empezar"
+  #define MSG_LP_1 " Nivela el punto 1     Pulsa la rueda"
+  #define MSG_LP_2 " Nivela el punto 2     Pulsa la rueda"
+  #define MSG_LP_3 " Nivela el punto 3     Pulsa la rueda"
+  #define MSG_LP_4 " Nivela el punto 4     Pulsa la rueda"
+  #define MSG_LP_5 "Comprueba el centro  Pulsa para acabar"        
+  #define MSG_LP_6 "!Base nivelada!"
+  #define MSG_LP_COOL_1 "Enfriando..."
+  #define MSG_LP_COOL_2 "Temp:"
+  #define MSG_LP_COOL_3 "  Pulsa para salir"
+  
+  #endif //#ifdef WITBOX
 
 #if ENABLED(DELTA_CALIBRATION_MENU)
   #define MSG_DELTA_CALIBRATE               "Calibracion Delta"

@@ -56,6 +56,34 @@ static void lcd_status_screen();
   static void lcd_control_motion_menu();
   static void lcd_control_volumetric_menu();
 
+//menus extras para witbox->
+#ifdef WITBOX
+static void lcd_control_filament_menu();
+static void lcd_move_jog_menu();
+static void lcd_speed_printing();
+static void lcd_filament_menu();
+static void lcd_filament_Material_menu(int Material);
+
+boolean FilamentMenuActive;
+
+int  pageShowInfo=0;
+boolean ChangeScreen=false;
+void set_pageShowInfo(int value){  pageShowInfo=value;  }
+void set_ChangeScreen(boolean state) { ChangeScreen=state;}
+
+// Extruder 1 ************************************************
+// Load
+static void lcd_load_material_extrud_1();
+static void lcd_insert_and_press_1();
+static void lcd_pre_extrud_1();
+static void lcd_extrud_1();
+static void lcd_abort_preheating_1();
+
+// Unload
+static void lcd_unload_material_extrud_1();
+#endif
+//<-menus extras para witbox
+
   #if ENABLED(HAS_LCD_CONTRAST)
     static void lcd_set_contrast();
   #endif
@@ -966,6 +994,7 @@ static void lcd_control_menu() {
   MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
   MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
   MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
+  MENU_ITEM(submenu, MSG_FILAMENT, lcd_filament_menu);     //cambiar filamento
   MENU_ITEM(submenu, MSG_VOLUMETRIC, lcd_control_volumetric_menu);
 
   #if ENABLED(HAS_LCD_CONTRAST)
@@ -982,6 +1011,106 @@ static void lcd_control_menu() {
   MENU_ITEM(function, MSG_RESTORE_FAILSAFE, Config_ResetDefault);
   END_MENU();
 }
+
+//WITBOX->
+#ifdef WITBOX
+static void lcd_filament_menu()
+{
+    START_MENU();
+    MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
+    
+    MENU_ITEM(submenu, MSG_LOAD, lcd_load_material_extrud_1);
+    MENU_ITEM(submenu, MSG_UNLOAD, lcd_unload_material_extrud_1);
+    END_MENU();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//                              EXTRUDER 1                                  //
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+// Load
+static void lcd_load_material_extrud_1()
+{
+    //Settings
+    FilamentMenuActive = true;
+    
+    ////CALENTANDO/HEATING
+    setTargetHotend0(Change_Filament_Target_Temp);
+    fanSpeed = PREHEAT_FAN_SPEED;
+
+    START_MENU();
+    MENU_ITEM(back, MSG_ABORT, lcd_abort_preheating_1);
+    END_MENU();
+
+    int tHotend=int(degHotend(0) + 0.5);
+    int tTarget=int(degTargetHotend(0) + 0.5);
+    lcd.setCursor(3, 2);
+    lcd_printPGM(PSTR(MSG_HEATING));
+    lcd.setCursor(5, 3);
+    lcd.print(LCD_STR_THERMOMETER[0]);
+    lcd.print(itostr3(tHotend));
+    lcd.print('/');
+    lcd.print(itostr3left(tTarget));
+    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+
+    if ((degHotend(0) > degTargetHotend(0)) )
+    {
+        lcd_quick_feedback();
+        currentMenu = lcd_insert_and_press_1;
+    }
+}
+
+static void lcd_insert_and_press_1()
+{
+    START_MENU();
+    MENU_ITEM(back, MSG_ABORT, lcd_abort_preheating_1);
+    active_extruder = 0;
+    MENU_ITEM(gcode, MSG_PRE_EXTRUD, PSTR("M701"));
+    END_MENU();
+}
+static void lcd_abort_preheating_1()
+{
+  FilamentMenuActive = false;
+  lcd_filament_menu();
+}
+
+// UNLOAD *************************************************************************
+static void lcd_unload_material_extrud_1()
+{
+ //Settings
+ 
+    FilamentMenuActive = true;
+    fanSpeed = PREHEAT_FAN_SPEED;
+    ////CALENTANDO/HEATING
+   setTargetHotend0(Change_Filament_Target_Temp);
+
+    START_MENU();
+    MENU_ITEM(back, MSG_ABORT, lcd_abort_preheating_1);
+    END_MENU();
+
+    int tHotend=int(degHotend(0) + 0.5);
+    int tTarget=int(degTargetHotend(0) + 0.5);
+    lcd.setCursor(3, 2);
+    lcd_printPGM(PSTR(MSG_HEATING));
+    lcd.setCursor(5, 3);
+    lcd.print(LCD_STR_THERMOMETER[0]);
+    lcd.print(itostr3(tHotend));
+    lcd.print('/');
+    lcd.print(itostr3left(tTarget));
+    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+
+    if (degHotend(0) > degTargetHotend(0))
+    {
+        lcd_quick_feedback();
+        currentMenu = lcd_filament_menu;
+  //-- Ejecutar gcode
+   enqueuecommands_P((PSTR("M702")));
+    }
+}
+#endif //WITBOX
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 /**
  *
@@ -1674,7 +1803,7 @@ void lcd_update() {
       }
     #endif //ULTIPANEL
 
-    if (currentMenu == lcd_status_screen) {
+    if (currentMenu == lcd_status_screen || FilamentMenuActive) {
       if (!lcd_status_update_delay) {
         lcdDrawUpdate = 1;
         lcd_status_update_delay = 10;   /* redraw the main screen every second. This is easier then trying keep track of all things that change on the screen */
@@ -1708,7 +1837,7 @@ void lcd_update() {
     #if ENABLED(ULTIPANEL)
 
       // Return to Status Screen after a timeout
-      if (currentMenu != lcd_status_screen &&
+      if (currentMenu != lcd_status_screen && !FilamentMenuActive &&
         #if ENABLED(MANUAL_BED_LEVELING)
           currentMenu != _lcd_level_bed &&
           currentMenu != _lcd_level_bed_homing &&

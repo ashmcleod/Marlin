@@ -16,6 +16,16 @@
   void lcd_reset_alert_level();
   bool lcd_detected(void);
 
+//WITBOX->
+#ifdef WITBOX
+void set_pageShowInfo(int value);
+void set_ChangeScreen(boolean state);
+void config_lcd_level_bed(void);
+void lcd_level_bed_cooling(void);
+void lcd_level_bed(void);
+#endif
+//<-WITBOX
+
   #if ENABLED(LCD_USE_I2C_BUZZER)
     void lcd_buzz(long duration, uint16_t freq);
   #endif
